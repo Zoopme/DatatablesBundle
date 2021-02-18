@@ -15,24 +15,26 @@
 {%- endset -%}
 
 {% if column_class_editable_selector is defined %}
-    <div {{ datetime_selector }} class="{{ column_class_editable_selector }}" data-pk="{{ pk }}" {% if path is not same as(null) %}data-path="{{ path }}"{% endif %}></div>
+    <span {{ datetime_selector }} class="{{ column_class_editable_selector }}" data-pk="{{ pk }}" {% if path is not same as(null) %}data-path="{{ path }}"{% endif %}></span>
 {% else %}
-    <div {{ datetime_selector }}>
+    <span {{ datetime_selector }}>
         {% if data is same as(null) and default_content is not same as(null) %}
             {{ default_content }}
         {% endif %}
-    </div>
+    </span>
 {% endif %}
 
 {% if data is not same as(null) %}
     <script type="text/javascript">
         $(function() {
             moment.locale("{{ app.request.locale }}");
-
+            
+            {# Using id tag selector instead of hashtag to select duplicate ids #}
+            {# See https://stackoverflow.com/questions/8498579/how-does-jquery-work-when-there-are-multiple-elements-with-the-same-id-value #}
             {% if timeago is same as(false) %}
-                $("#{{ datetime_id_selector }}").html(moment.unix({{ data|date('U') }}).format("{{ date_format }}"));
+                $("[id='{{ datetime_id_selector }}']").html(moment.unix({{ data|date('U') }}).format("{{ date_format }}"));
             {% else %}
-                $("#{{ datetime_id_selector }}").html(moment.unix({{ data|date('U') }}).fromNow());
+                $("[id='{{ datetime_id_selector }}']").html(moment.unix({{ data|date('U') }}).fromNow());
             {% endif %}
         });
     </script>
