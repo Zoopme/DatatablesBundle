@@ -24,6 +24,7 @@ use Sg\DatatablesBundle\Datatable\DatatableInterface;
 use Sg\DatatablesBundle\Datatable\Features;
 use Sg\DatatablesBundle\Datatable\Options;
 use Sg\DatatablesBundle\Response\DatatableQueryBuilder;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 /**
  * @internal
@@ -80,6 +81,7 @@ final class DatatableQueryBuilderTest extends \PHPUnit\Framework\TestCase
         $this->features = $this->prophesize(Features::class);
         $this->ajax = $this->prophesize(Ajax::class);
         $this->dataTable = $this->prophesize(DatatableInterface::class);
+        $this->params = $this->prophesize(ParameterBagInterface::class);
     }
 
     public function testUsingAPrefixedAliasWhenShortNameIsAReservedWord()
@@ -118,6 +120,6 @@ final class DatatableQueryBuilderTest extends \PHPUnit\Framework\TestCase
         $this->dataTable->getFeatures()->willReturn($this->features->reveal());
         $this->dataTable->getAjax()->willReturn($this->ajax->reveal());
 
-        return new DatatableQueryBuilder([], $this->dataTable->reveal());
+        return new DatatableQueryBuilder([], $this->dataTable->reveal(), $this->params);
     }
 }

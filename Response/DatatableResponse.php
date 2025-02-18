@@ -18,6 +18,7 @@ use Sg\DatatablesBundle\Datatable\DatatableInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 class DatatableResponse
 {
@@ -52,11 +53,12 @@ class DatatableResponse
      */
     private $datatableQueryBuilder;
 
-    public function __construct(RequestStack $requestStack)
+    public function __construct(RequestStack $requestStack, ParameterBagInterface $params)
     {
         $this->request = $requestStack->getCurrentRequest();
         $this->datatable = null;
         $this->datatableQueryBuilder = null;
+        $this->params = $params;
     }
 
     //-------------------------------------------------
@@ -163,7 +165,7 @@ class DatatableResponse
         }
 
         $this->requestParams = $this->getRequestParams();
-        $this->datatableQueryBuilder = new DatatableQueryBuilder($this->requestParams, $this->datatable);
+        $this->datatableQueryBuilder = new DatatableQueryBuilder($this->requestParams, $this->datatable, $this->params);
 
         return $this->datatableQueryBuilder;
     }

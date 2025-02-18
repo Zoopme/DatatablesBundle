@@ -27,6 +27,8 @@ use Sg\DatatablesBundle\Datatable\Filter\FilterInterface;
 use Sg\DatatablesBundle\Datatable\Options;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 use Symfony\Component\PropertyAccess\PropertyAccessor;
+use libphonenumber\PhoneNumberUtil;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 /**
  * @todo: remove phpcs warnings
@@ -192,7 +194,7 @@ class DatatableQueryBuilder
     /**
      * @throws Exception
      */
-    public function __construct(array $requestParams, DatatableInterface $datatable)
+    public function __construct(array $requestParams, DatatableInterface $datatable, ParameterBagInterface $params)
     {
         $this->requestParams = $requestParams;
 
@@ -220,6 +222,8 @@ class DatatableQueryBuilder
         $this->ajax = $datatable->getAjax();
 
         $this->initColumnArrays();
+
+        $this->params = $params;
     }
 
     //-------------------------------------------------
@@ -510,7 +514,7 @@ class DatatableQueryBuilder
             $globalSearchType = $this->options->getGlobalSearchType();
 
             // If global search type is a list of key words
-            if ($globalSearchType == 'keywords_string') {
+            if (in_array($globalSearchType, ['keywords_string', 'keywords_string_phone'])) {
                 
                 // Removing unnecessary spaces at the beginning and at the end
                 $globalSearch = trim($globalSearch);
@@ -529,6 +533,41 @@ class DatatableQueryBuilder
                 $keywords = [$globalSearch];
             }
             
+            // If global search is including phone numbers
+            if ($this->options->getGlobalSearchType() == 'keywords_string_phone') {
+                
+                // Adding searchable version of phone numbers in search
+                foreach($keywords as $k => $word) {
+                    
+                    // Retrieving country
+                    $countrycode = $this->params->get('app.country');
+                    
+                    // Creating instance of phone number service
+                    $phoneUtil = PhoneNumberUtil::getInstance();
+    
+                    // If keyword looks like a phone number
+                    try {
+                        
+                        // Trying to parse word to phone number object
+                        $newphoneobject = $phoneUtil->parse($word, $countrycode);
+    
+                        // If phone number is valid
+                        if ($phoneUtil->isValidNumber($newphoneobject)) {
+    
+                            // Formatting phone number as is in database
+                            $newphone = $phoneUtil->formatOutOfCountryCallingNumber($newphoneobject, $countrycode);
+                            
+                            // Replacing by standardized version of phone number
+                            $keywords[$k] = $newphone;
+                        }
+                    } catch (\Exception $e) {
+    
+                        // Nothing, this is normal
+                        unset($e);
+                    }        
+                }
+            }
+
             // Iterating through each keyword
             foreach ($keywords as $k => $word) {
                 

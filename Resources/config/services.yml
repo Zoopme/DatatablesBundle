@@ -21,6 +21,7 @@ services:
         public: true
         arguments:
             - '@request_stack'
+            - '@Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface'
 
     sg_datatables.factory:
         class: Sg\DatatablesBundle\Datatable\DatatableFactory
@@ -32,3 +33,6 @@ services:
             - '@router'
             - '@doctrine.orm.entity_manager'
             - '@twig'
+
+parameters:
+    app.country: '%env(COUNTRY)%'
